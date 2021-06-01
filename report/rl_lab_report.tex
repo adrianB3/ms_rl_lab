@@ -2,12 +2,15 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage{mathpazo}
 \usepackage[english]{babel}
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
 %\usepackage{times}
 \usepackage{graphicx}
+\usepackage[backref, hidelinks, urlcolor=blue]{hyperref}
+\usepackage[nottoc]{tocbibind}
 
 \oddsidemargin -0.25in		% Left margin is 1in + this value
 \textwidth 6.75in		% Right margin is not set explicitly
@@ -22,14 +25,15 @@
 	\tableofcontents
 	
 	\chapter{Game description}
-	...
+	(here please provide a description of the game and screen shots from the game, similar to those in the course) \cite{noauthor_gravitar_2021}
 	\chapter{Algorithms}
-	...
+	(here please briefly describe all the algorithms used, in your own words)
 	\chapter{Experimental Results}
-	...
+	(here please provide, for each algorithm, the full config file, the description of the config, similar to those in the course, and the graphs of the results; try to train each algorithm for at least 500k-1M steps; make sure to train all the algorithms for the same number of steps)
 	\chapter{Conclusions}
+	(here please discuss the results obtained and compare the performance of the algorithms)
 	
 	\bibliographystyle{unsrt}	% Order by citation
-	\bibliography{report}
+	\bibliography{lab_report_bibliography.bib}
 	
 \end{document}
