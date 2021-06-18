@@ -46,7 +46,7 @@
           "lr": 7e-4,
           "alpha": 0.99,
           "eps": 1e-5
-        },
+        },x
         "critic_optim_spec": {
           "name": "RMSprop",
           "lr": 7e-4,
@@ -64,7 +64,7 @@
       "reward_scale": "sign",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 1e7
+      "max_frame": 1e6
     }],
     "body": {
       "product": "outer",
@@ -75,7 +75,7 @@
       "eval_frequency": 10000,
       "log_frequency": 10000,
       "rigorous_eval": 0,
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 1
     }
   },
@@ -144,7 +144,7 @@
       "reward_scale": "sign",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 1e7
+      "max_frame": 1e6
     }],
     "body": {
       "product": "outer",
@@ -155,7 +155,7 @@
       "eval_frequency": 10000,
       "log_frequency": 10000,
       "rigorous_eval": 0,
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 1
     }
   }

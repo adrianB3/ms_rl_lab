@@ -37,7 +37,7 @@
     "env": [{
       "name": "GravitarNoFrameskip-v4",
       "max_t": null,
-      "max_frame": 100000
+      "max_frame": 1e6
     }],
     "body": {
       "product": "outer",
@@ -47,7 +47,7 @@
       "distributed": false,
       "eval_frequency": 2000,
       "max_trial": 1,
-      "max_session": 4
+      "max_session": 1
     }
   },
   "sarsa_boltzmann_gravitar": {
@@ -88,7 +88,7 @@
     "env": [{
       "name": "GravitarNoFrameskip-v4",
       "max_t": null,
-      "max_frame": 100000
+      "max_frame": 1e6
     }],
     "body": {
       "product": "outer",

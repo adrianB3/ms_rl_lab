@@ -1,9 +1,9 @@
 {
-  "ddqn_gravitar": {
+  "dqn_gravitar": {
     "agent": [{
-      "name": "DoubleDQN",
+      "name": "DQN",
       "algorithm": {
-        "name": "DoubleDQN",
+        "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
@@ -23,7 +23,7 @@
         "name": "Replay",
         "batch_size": 32,
         "max_size": 200000,
-        "use_cer": false,
+        "use_cer": false
       },
       "net": {
         "type": "ConvNet",

@@ -71,12 +71,28 @@
 		
 	\chapter{Algorithms}
 		In this chapter, the algorithms used will be briefly explained.
+		\section{Reinforce}
 		\section{DQN - Deep Q-Network}
 		...
 		\section{A2C - Advantage Actor-Critic}
-		...
+		The Advantage Actor-Critic algorithm relies on two important concepts:
+			\paragraph{The Actor-Critic architecture.} This type of algorithms learn two parametrized functions simultaneously. The actor learns the actual policy that the agent uses to act in the world, while the critic learns the value function that evaluates the state-action pairs.
+			
+			Using the critic to provide a reinforcement signal has the advantage of being able to feed a more continuous signal for training that is useful for example in sparse rewards environments. However, training becomes more difficult because the policy is dependent on the quality of the value function. In the beginning of the training process, the value function is not learned, so the evaluation signal provided doesn't help much to select better actions. Therefore, usually an Advantage function is actually learned.
+			\paragraph{Reinforcing signal based on the Advantage function.}
+			The advantage function measures how much an action is better or worse than a policy's average action in a certain state. It is defined as follows:
+			\begin{equation}
+			A^\pi(s_t, a_t) = Q^\pi(s_t, a_t) - V^\pi(s_t)
+			\end{equation}
+			It has the following properties:
+			\begin{itemize}
+				\item The advantage is a relative measure. It quantifies whether a particular action $a$ in a state $s$ will improve the policy relative to the value $V^\pi(s)$.
+				\item TODO
+			\end{itemize}
+			\subsection{Estimating the advantage with n-Step returns}
+			\subsection{Estimating the advantage with Generalized Advantage Estimation}
 		\section{PPO - Proximal Policy Optimization}
-		...
+		PPO aims at avoiding the problem of performance collapse through a surrogate objective that is guaranteed to have monotonic improvement. 
 		\section{SAC - Soft Actor-Critic}
 		...
 	\chapter{Experimental Results}
