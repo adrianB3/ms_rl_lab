@@ -11,6 +11,16 @@
 %\usepackage{times}
 \usepackage{graphicx}
 \usepackage{listings}
+\lstset
+{ 
+	basicstyle=\footnotesize,
+	numbers=left,
+	stepnumber=1,
+	showstringspaces=false,
+	tabsize=1,
+	breaklines=true,
+	breakatwhitespace=false,
+}
 \usepackage{float}
 \usepackage[backref, hidelinks, urlcolor=blue]{hyperref}
 \usepackage[nottoc]{tocbibind}
@@ -72,7 +82,10 @@
 	\chapter{Algorithms}
 		In this chapter, the algorithms used will be briefly explained.
 		\section{Reinforce}
-		Reinforce is the most basic policy-gradient algorithm.
+		Reinforce is a Monte Carlo variant of the policy-gradient algorithm in reinforcement learning. The agent collects samples of an episode using its current policy and uses it to update the policy parameter $\theta$. It is updated as an off-policy algorithm:
+		\begin{equation}
+			\nabla_\theta J(\theta) = E_\pi[G_t \nabla_\theta ln \pi_\theta(a_t, s_t)]
+		\end{equation}  
 		\section{DQN - Deep Q-Network}
 		...
 		\section{A2C - Advantage Actor-Critic}
@@ -93,11 +106,161 @@
 			\subsection{Estimating the advantage with n-Step returns}
 			\subsection{Estimating the advantage with Generalized Advantage Estimation}
 		\section{PPO - Proximal Policy Optimization}
-		PPO aims at avoiding the problem of performance collapse through a surrogate objective that is guaranteed to have monotonic improvement. 
+		PPO \cite{schulman_proximal_2017} aims at avoiding the problem of performance collapse through a surrogate objective that is guaranteed to have monotonic improvement. 
+		It works by extending either REINFORCE or an actor-critic algorithm with the modified objective. It is data efficient and reliable as TRPO \cite{schulman_trust_2017} but uses first-order optimization.
+		Let $r_t(\theta)$ denote the probability ratio $r_t(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)}$ so r($\theta_{old}) = 1$. TRPO maximizes a "surrogate" objective: 
+		\begin{equation}
+			L^{CPI}(\theta) = \hat{E}_t \left[\frac{\pi_\theta(a_t | s_t)}{\pi_{\theta_{old}}(a_t | s_t)}\hat{A}_t\right] = \hat{E}_t\left[r_t(\theta)\hat{A}_t\right]
+		\end{equation}
+		where $CPI$ refers to a conservative policy iteration.\cite{schulman_proximal_2017}
+		Without a constraint, maximization of $L^{CPI}$ would lead to an excessively large policy update, therefore, PPO modifies the objective to penalize changes to the policy that moves $r_t(\theta)$ away from 1:
+		\begin{equation}
+			J^{CLIP}(\theta) = \hat{E}\left[ min \left( r_t(\theta)\hat{A}, clip\left( r_t(\theta), 1 - \epsilon, 1 + \epsilon \right) \hat{A} \right) \right]
+		\end{equation}
+		where $\epsilon$ is a hyperparameter. The intuition is as follows: The $clip$ term modifies the surrogate objective by clipping the probability ratio, which removes the incentive to move $r_t$ outside the interval $[1-\epsilon, 1 + \epsilon]$ \cite{schulman_proximal_2017}.
 		
 		
 	\chapter{Experimental Results}
 	(here please provide, for each algorithm, the full config file, the description of the config, similar to those in the course, and the graphs of the results; try to train each algorithm for at least 500k-1M steps; make sure to train all the algorithms for the same number of steps)
+	\section{Reinforce}
+	
+	\section{DQN}
+	
+	\section{A2C}
+	
+	For training A2C, two experiments have been considered: 
+	\begin{enumerate}
+		\item Training with generalized advantage function (GAE)
+		The config file is as follows:
+		\begin{lstlisting}
+			
+		\end{lstlisting}
+		
+		\item Training with n-Step Returns
+	\end{enumerate}
+	
+	\section{PPO}
+	
+	For training the Proximal Policy Optimization algorithm, the following configuration has been used:
+	\begin{lstlisting}
+		{
+			"ppo_gravitar": {
+				"agent": [{
+					"name": "PPO",
+					"algorithm": {
+						"name": "PPO",
+						"action_pdtype": "default",
+						"action_policy": "default",
+						"explore_var_spec": null,
+						"gamma": 0.99,
+						"lam": 0.70,
+						"clip_eps_spec": {
+							"name": "no_decay",
+							"start_val": 0.10,
+							"end_val": 0.10,
+							"start_step": 0,
+							"end_step": 0
+						},
+						"entropy_coef_spec": {
+							"name": "no_decay",
+							"start_val": 0.01,
+							"end_val": 0.01,
+							"start_step": 0,
+							"end_step": 0
+						},
+						"val_loss_coef": 0.5,
+						"time_horizon": 128,
+						"minibatch_size": 256,
+						"training_epoch": 4
+					},
+					"memory": {
+						"name": "OnPolicyBatchReplay",
+					},
+					"net": {
+						"type": "ConvNet",
+						"shared": true,
+						"conv_hid_layers": [
+						[32, 8, 4, 0, 1],
+						[64, 4, 2, 0, 1],
+						[32, 3, 1, 0, 1]
+						],
+						"fc_hid_layers": [512],
+						"hid_layers_activation": "relu",
+						"init_fn": "orthogonal_",
+						"normalize": true,
+						"batch_norm": false,
+						"clip_grad_val": 0.5,
+						"use_same_optim": false,
+						"loss_spec": {
+							"name": "MSELoss"
+						},
+						"actor_optim_spec": {
+							"name": "Adam",
+							"lr": 2.5e-4,
+						},
+						"critic_optim_spec": {
+							"name": "Adam",
+							"lr": 2.5e-4,
+						},
+						"lr_scheduler_spec": {
+							"name": "LinearToZero",
+							"frame": 1e7
+						},
+						"gpu": true
+					}
+				}],
+				"env": [{
+					"name": "GravitarNoFrameskip-v4",
+					"frame_op": "concat",
+					"frame_op_len": 4,
+					"reward_scale": "sign",
+					"num_envs": 4,
+					"max_t": null,
+					"max_frame": 1e6
+				}],
+				"body": {
+					"product": "outer",
+					"num": 1
+				},
+				"meta": {
+					"distributed": false,
+					"eval_frequency": 10000,
+					"log_frequency": 10000,
+					"rigorous_eval": 0,
+					"max_session": 1,
+					"max_trial": 1
+				}
+			}
+		}
+	\end{lstlisting}
+	
+	The following parameters are set:
+	\begin{itemize}
+		\item The action policy is the default policy for a discrete action space.
+		\item Generalized advantage estimation is used.
+		\item The clipping parameters are set in lines 12-17
+		\item In the lines 34-43 the network architecture is set as a 3 layer convolutional network with a hidden fully connected layer and ReLU activations.
+		\item The opimizer is set to Adam both for the actor and the critic networks.
+		\item The environment is Gravitar.
+		\item Evaluation is done every 10k steps.
+		\item The algorithm is trained for 1M steps.
+	\end{itemize}
+	
+	The following returns are obtained:
+	
+	\begin{figure}[ht!]
+		\begin{minipage}[c]{0.5\linewidth}
+			\centering
+			\includegraphics[height=0.3\textheight, width=0.9\linewidth]{ppo_gravitar_t0_trial_graph_mean_returns_vs_frames.png}
+			\caption{Trial graph}
+		\end{minipage}\hfill
+		\begin{minipage}[c]{0.5\linewidth}	
+			\centering
+			\includegraphics[height=0.3\textheight, width=0.9\linewidth]{ppo_gravitar_t0_trial_graph_mean_returns_ma_vs_frames.png}
+			\caption{Trial graph with moving average}
+		\end{minipage}
+		\caption{PPO trial graphs from SLM lab. On the vertical axis the total rewards are shown and on the horizontal axis the number of frames.}
+	\end{figure}
 	\chapter{Conclusions}
 	(here please discuss the results obtained and compare the performance of the algorithms)
 	
