@@ -71,7 +71,7 @@
       "reward_scale": "sign",
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 1e7
+      "max_frame": 1e6
     }],
     "body": {
       "product": "outer",
@@ -82,7 +82,7 @@
       "eval_frequency": 10000,
       "log_frequency": 10000,
       "rigorous_eval": 0,
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 1
     }
   }
