@@ -14,7 +14,7 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
-          "end_step": 500000
+          "end_step": 300000
         },
         "training_frequency": 1
       },
@@ -54,7 +54,7 @@
       "reward_scale": "sign",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 500000
+      "max_frame": 300000
     }],
     "body": {
       "product": "outer",

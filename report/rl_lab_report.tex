@@ -86,8 +86,6 @@
 		\begin{equation}
 			\nabla_\theta J(\theta) = E_\pi[G_t \nabla_\theta ln \pi_\theta(a_t, s_t)]
 		\end{equation}  
-		\section{DQN - Deep Q-Network}
-		...
 		\section{A2C - Advantage Actor-Critic}
 		The Advantage Actor-Critic algorithm relies on two important concepts:
 			\paragraph{The Actor-Critic architecture.} This type of algorithms learn two parametrized functions simultaneously. The actor learns the actual policy that the agent uses to act in the world, while the critic learns the value function that evaluates the state-action pairs.
@@ -101,10 +99,23 @@
 			It has the following properties:
 			\begin{itemize}
 				\item The advantage is a relative measure. It quantifies whether a particular action $a$ in a state $s$ will improve the policy relative to the value $V^\pi(s)$.
-				\item TODO
+				\item If an action is worse than the average action, but the expected return is still positive - the action taken should become less probable. This is the behavior of the advantage function, in contrast with other methods that might actually encourage that action.
+				\item The advantage function is able to capture long-term effects of an action, because it considers all future time steps, while ignoring the effects of all the actions to date. 
 			\end{itemize}
 			\subsection{Estimating the advantage with n-Step returns}
+			The n-Step estimate is formulated as follows:
+			\begin{equation}
+				A_{Nstep}^\pi (s_t, a_t) = Q^\pi(s_t, a_t) - V^\pi(s_t) \approx r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} + \dots + \gamma^n r_{t + n} + \gamma^{n_+ 1} \hat{V}^\pi(s_{t+n + 1}) - \hat{V}^\pi(s_t)
+			\end{equation}
+			The hyperparameter n - the number of actual rewards, controls the bias-variance trade-off.
 			\subsection{Estimating the advantage with Generalized Advantage Estimation}
+			GAE is defined as an exponentially weighted average of all of the n-step forward return advantages:
+			\begin{equation}
+				A_{GAE}^\pi (s_t, a_t) = \sum_{l=0}^{\infty}(\gamma \lambda)^l \delta_{t+l}
+			\end{equation}
+			where, $\delta_t = r_t + \gamma V^\pi (s_{t+1}) - V^\pi (s_t)$
+			
+			The variance is controlled through the decay coefficient $\lambda$
 		\section{PPO - Proximal Policy Optimization}
 		PPO \cite{schulman_proximal_2017} aims at avoiding the problem of performance collapse through a surrogate objective that is guaranteed to have monotonic improvement. 
 		It works by extending either REINFORCE or an actor-critic algorithm with the modified objective. It is data efficient and reliable as TRPO \cite{schulman_trust_2017} but uses first-order optimization.
@@ -121,7 +132,6 @@
 		
 		
 	\chapter{Experimental Results}
-	(here please provide, for each algorithm, the full config file, the description of the config, similar to those in the course, and the graphs of the results; try to train each algorithm for at least 500k-1M steps; make sure to train all the algorithms for the same number of steps)
 	\section{Reinforce}
 	
 	For training Reinforce, the following configuration has been used:
@@ -142,7 +152,7 @@
 							"start_val": 0.01,
 							"end_val": 0.001,
 							"start_step": 1000,
-							"end_step": 500000
+							"end_step": 300000
 						},
 						"training_frequency": 1
 					},
@@ -182,7 +192,7 @@
 					"reward_scale": "sign",
 					"num_envs": 16,
 					"max_t": null,
-					"max_frame": 500000
+					"max_frame": 300000
 				}],
 				"body": {
 					"product": "outer",
@@ -199,11 +209,31 @@
 	\end{lstlisting}
 
 	The following parameters are set:
-	\begin{itemize}
-		\item 
-	\end{itemize}
+		\begin{itemize}
+	\item The algorithm is set to Reinforce
+	\item The action policy is the default one
+	\item The agent uses a convolutional network with three layers connected to a single linear layer with ReLU activations.
+	\item The optimizer is Adam.
+	\item Algorithm is trained for 300k steps.
+	\item Evaluation occurs every 10k steps.
 	
-	\section{DQN}
+	The following returns are obtained:
+	
+	\begin{figure}[ht!]
+		\begin{minipage}[c]{0.5\linewidth}
+			\centering
+			\includegraphics[height=0.3\textheight, width=0.9\linewidth]{reinforce_gravitar_t0_s0_session_graph_eval_mean_returns_vs_frames.png}
+			\caption{Trial graph}
+		\end{minipage}\hfill
+		\begin{minipage}[c]{0.5\linewidth}	
+			\centering
+			\includegraphics[height=0.3\textheight, width=0.9\linewidth]{reinforce_gravitar_t0_s0_session_graph_eval_mean_returns_ma_vs_frames.png}
+			\caption{Trial graph with moving average}
+		\end{minipage}
+		\caption{Reinforce trial graphs from SLM lab. On the vertical axis the total rewards are shown and on the horizontal axis the number of frames.}
+	\end{figure}
+	
+\end{itemize}
 	
 	\section{A2C}
 	
@@ -212,8 +242,138 @@
 		\item Training with generalized advantage function (GAE)
 		The config file is as follows:
 		
+		\begin{lstlisting}
+			{
+				"a2c_gae_gravitar": {
+					"agent": [{
+						"name": "A2C",
+						"algorithm": {
+							"name": "ActorCritic",
+							"action_pdtype": "default",
+							"action_policy": "default",
+							"explore_var_spec": null,
+							"gamma": 0.99,
+							"lam": 0.95,
+							"num_step_returns": null,
+							"entropy_coef_spec": {
+								"name": "no_decay",
+								"start_val": 0.01,
+								"end_val": 0.01,
+								"start_step": 0,
+								"end_step": 0
+							},
+							"val_loss_coef": 0.5,
+							"training_frequency": 32
+						},
+						"memory": {
+							"name": "OnPolicyBatchReplay"
+						},
+						"net": {
+							"type": "ConvNet",
+							"shared": true,
+							"conv_hid_layers": [
+							[32, 8, 4, 0, 1],
+							[64, 4, 2, 0, 1],
+							[32, 3, 1, 0, 1]
+							],
+							"fc_hid_layers": [512],
+							"hid_layers_activation": "relu",
+							"init_fn": "orthogonal_",
+							"normalize": true,
+							"batch_norm": false,
+							"clip_grad_val": 0.5,
+							"use_same_optim": false,
+							"loss_spec": {
+								"name": "MSELoss"
+							},
+							"actor_optim_spec": {
+								"name": "RMSprop",
+								"lr": 7e-4,
+								"alpha": 0.99,
+								"eps": 1e-5
+							},x
+							"critic_optim_spec": {
+								"name": "RMSprop",
+								"lr": 7e-4,
+								"alpha": 0.99,
+								"eps": 1e-5
+							},
+							"lr_scheduler_spec": null,
+							"gpu": true
+						}
+					}],
+					"env": [{
+						"name": "GravitarNoFrameskip-v4",
+						"frame_op": "concat",
+						"frame_op_len": 4,
+						"reward_scale": "sign",
+						"num_envs": 16,
+						"max_t": null,
+						"max_frame": 1e6
+					}],
+					"body": {
+						"product": "outer",
+						"num": 1
+					},
+					"meta": {
+						"distributed": false,
+						"eval_frequency": 10000,
+						"log_frequency": 10000,
+						"rigorous_eval": 0,
+						"max_session": 1,
+						"max_trial": 1
+					}
+				}
+			}
+		\end{lstlisting}
+	
+		The following parameters are set:
+		\begin{itemize}
+			\item The algorithm is A2C
+			\item The action policy is the default one
+			\item GAE is used as an Advantage function estimator
+			\item The agent uses a convolutional network with three layers connected to a single linear layer with ReLU activations.
+			\item The optimizer is RMSProp.
+			\item Algorithm is trained for 1M steps.
+			\item Evaluation occurs every 10k steps.
+		\end{itemize}
+	
+		The following returns are obtained:
 		
+		\begin{figure}[ht!]
+			\begin{minipage}[c]{0.5\linewidth}
+				\centering
+				\includegraphics[height=0.3\textheight, width=0.9\linewidth]{a2c_gae_gravitar_t0_trial_graph_mean_returns_vs_frames.png}
+				\caption{Trial graph}
+			\end{minipage}\hfill
+			\begin{minipage}[c]{0.5\linewidth}	
+				\centering
+				\includegraphics[height=0.3\textheight, width=0.9\linewidth]{a2c_gae_gravitar_t0_trial_graph_mean_returns_ma_vs_frames.png}
+				\caption{Trial graph with moving average}
+			\end{minipage}
+			\caption{A2C trial graphs from SLM lab. On the vertical axis the total rewards are shown and on the horizontal axis the number of frames.}
+			\end{figure}
+		
+		\pagebreak
 		\item Training with n-Step Returns
+		
+		The config file is almost the same as the GAE version, it differs at the $num\_step\_returns$ parameter.
+		
+		The following returns are obtained:
+		
+		\begin{figure}[ht!]
+			\begin{minipage}[c]{0.5\linewidth}
+				\centering
+				\includegraphics[height=0.3\textheight, width=0.9\linewidth]{a2c_nstep_gravitar_t0_s0_session_graph_eval_mean_returns_vs_frames.png}
+				\caption{Trial graph}
+			\end{minipage}\hfill
+			\begin{minipage}[c]{0.5\linewidth}	
+				\centering
+				\includegraphics[height=0.3\textheight, width=0.9\linewidth]{a2c_nstep_gravitar_t0_s0_session_graph_eval_mean_returns_ma_vs_frames.png}
+				\caption{Trial graph with moving average}
+			\end{minipage}
+			\caption{A2C trial graphs from SLM lab. On the vertical axis the total rewards are shown and on the horizontal axis the number of frames.}
+		\end{figure}
 	\end{enumerate}
 	
 	\section{PPO}
@@ -322,7 +482,7 @@
 		\item Evaluation is done every 10k steps.
 		\item The algorithm is trained for 1M steps.
 	\end{itemize}
-	
+	 \pagebreak
 	The following returns are obtained:
 	
 	\begin{figure}[ht!]
@@ -339,7 +499,8 @@
 		\caption{PPO trial graphs from SLM lab. On the vertical axis the total rewards are shown and on the horizontal axis the number of frames.}
 	\end{figure}
 	\chapter{Conclusions}
-	(here please discuss the results obtained and compare the performance of the algorithms)
+	
+	To conclude, Gravitar is a very difficult game to solve. Not only due to it's more complex physics and controls, but also due to the fact that the levels are increasingly difficult and quite different from one to another. No algorithms from the ones tested was able to decently solve this environment. As a comparison, apart from Reinforce, which (with no surprise) performed the poorest, the other algorithms performed similarly, with the n-step A2C having the best mean returns average of approx. 50. Also, all the algorithms suffered performance degradation as more steps were taken. 
 	
 	\bibliographystyle{unsrt}	% Order by citation
 	\bibliography{lab_report_bibliography.bib}

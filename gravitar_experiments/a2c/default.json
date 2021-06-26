@@ -46,7 +46,7 @@
           "lr": 7e-4,
           "alpha": 0.99,
           "eps": 1e-5
-        },x
+        },
         "critic_optim_spec": {
           "name": "RMSprop",
           "lr": 7e-4,
@@ -62,7 +62,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
-      "num_envs": 16,
+      "num_envs": 4,
       "max_t": null,
       "max_frame": 1e6
     }],
@@ -142,7 +142,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
-      "num_envs": 16,
+      "num_envs": 4,
       "max_t": null,
       "max_frame": 1e6
     }],
